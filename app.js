@@ -2,7 +2,7 @@ const PASSWORD = "1234";
 let students = [];
 let selectedStudent = null;
 
-const API_URL = "👉填入你的Apps Script網址";
+const API_URL = "https://script.google.com/macros/s/AKfycbxTO6LSPXO8Dac1WrYb9P5xnBMFgee0FwHTEiXeR7G1jsbo1C60TdxWfX5pzeFCY7ue/exec";
 
 // 🔐 登入
 function checkPassword() {
@@ -63,23 +63,35 @@ function selectStudent(student) {
   document.getElementById("selected").innerText =
     `已選擇：${student.name}`;
 }
-
-// 📤 送出成績
 async function submitScore() {
+  if (!selectedStudent) return alert("請先選擇學生");
+  
   const score = document.getElementById("score").value;
   const exam = localStorage.getItem("examName");
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "submit",
-      id: selectedStudent.id,
-      score: score,
-      exam: exam
-    })
-  });
+  try {
+    // 使用 text/plain 可以繞過一些 CORS 的複雜限制
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors", 
+      headers: {
+        "Content-Type": "text/plain"
+      },
+      body: JSON.stringify({
+        action: "submit",
+        id: selectedStudent.id,
+        score: score,
+        exam: exam
+      })
+    });
 
-  alert("已送出");
+    alert("已送出：" + selectedStudent.name);
+    // 送出後清空輸入框，方便下一個學生
+    document.getElementById("score").value = "";
+  } catch (err) {
+    console.error(err);
+    alert("送出失敗");
+  }
 }
 
 // ✅ 全部完成
