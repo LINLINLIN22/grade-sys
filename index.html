@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>成績填寫系統</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="login">
+  <h2>登入</h2>
+  <input type="password" id="pwd" placeholder="輸入密碼">
+  <button onclick="checkPassword()">進入</button>
+</div>
+
+<div id="app" style="display:none;">
+  <h2>成績填寫</h2>
+
+  <label>考試名稱：</label>
+  <input id="examName">
+  <button onclick="setExamName()">設定</button>
+
+  <hr>
+
+  <input id="search" placeholder="搜尋姓名或系級" oninput="doSearch()">
+
+  <ul id="results"></ul>
+
+  <hr>
+
+  <div id="selected"></div>
+
+  <input type="number" id="score" placeholder="輸入成績">
+  <button onclick="submitScore()">送出</button>
+
+  <hr>
+
+  <button onclick="finishAll()">全部填完</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
