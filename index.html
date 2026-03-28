@@ -1,43 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>成績系統(上傳CSV版本)</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>成績系統(上傳CSV版本)</title>
+<style>
+  body { font-family: Arial; padding: 10px; background-color: #333; color: #fff; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #666; padding: 6px; text-align: center; background-color: #444; color: #fff; }
+  input { width: 80px; background-color: #555; color: #fff; border: 1px solid #666; }
+  button { background-color: #555; color: #fff; border: 1px solid #666; padding: 5px 10px; }
+  h2 { color: #fff; }
+</style>
 </head>
 <body>
 
-<div id="login">
-  <h2>登入</h2>
-  <input type="password" id="pwd" placeholder="輸入密碼">
-  <button onclick="checkPassword()">進入</button>
-</div>
+<h2>📊 成績系統（CSV版）- 暗色主題</h2>
 
-<div id="app" style="display:none;">
-  <h2>成績填寫</h2>
+📂 上傳 CSV：
+<input type="file" id="fileInput" accept=".csv"><br><br>
 
-  <label>考試名稱：</label>
-  <input id="examName">
-  <button onclick="setExamName()">設定</button>
+🔍 搜尋：
+<input type="text" id="search"><br><br>
 
-  <hr>
+<table>
+  <thead id="thead"></thead>
+  <tbody id="tbody"></tbody>
+</table>
 
-  <input id="search" placeholder="搜尋姓名或系級" oninput="doSearch()">
+<br>
+<button onclick="downloadCSV()">下載 CSV(grades.csv)</button>
 
-  <ul id="results"></ul>
+<script>
+let data = [];
+let headers = [];
 
-  <hr>
+const tbody = document.getElementById("tbody");
+const thead = document.getElementById("thead");
 
-  <div id="selected"></div>
+// 讀取 CSV
+document.getElementById("fileInput").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
 
-  <input type="number" id="score" placeholder="輸入成績">
-  <button onclick="submitScore()">送出</button>
+  reader.onload = function(event) {
+    const text = event.target.result;
+    parseCSV(text);
+  };
 
-  <hr>
+  reader.readAsText(file);
+});
 
-  <button onclick="finishAll()">全部填完</button>
-</div>
+// 解析 CSV
+function parseCSV(text) {
+  const rows = text.split("\n").map(r => r.split(","));
+  headers = rows[0];
+  data = rows.slice(1).map(row => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = row[i] || "");
+    return obj;
+  });
 
-<script src="app.js"></script>
+  renderTable(data);
+}
+
+// 獲取顯示的欄位（排除"電子郵件信箱"）
+function getDisplayHeaders() {
+  return headers.filter(h => h !== "電子郵件信箱");
+}
+
+// 顯示表格
+function renderTable(dataset) {
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  const displayHeaders = getDisplayHeaders();
+
+  // 表頭
+  const tr = document.createElement("tr");
+  displayHeaders.forEach(h => {
+    const th = document.createElement("th");
+    th.innerText = h;
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+
+  // 資料
+  dataset.forEach((row, rowIndex) => {
+    const tr = document.createElement("tr");
+
+    displayHeaders.forEach(h => {
+      const td = document.createElement("td");
+
+      if (h === "姓名" || h === "代號" || h === "系級") {
+        td.innerText = row[h];
+      } else {
+        const input = document.createElement("input");
+        input.value = row[h];
+
+        input.onchange = (e) => {
+          row[h] = e.target.value;
+        };
+
+        td.appendChild(input);
+      }
+
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+// 下載 CSV
+function downloadCSV() {
+  let csv = headers.join(",") + "\n";
+  data.forEach(row => {
+    csv += headers.map(h => row[h]).join(",") + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "grades.csv";
+  a.click();
+}
+
+// 搜尋功能
+document.getElementById("search").addEventListener("input", function(e) {
+  const query = e.target.value.toLowerCase();
+  const filtered = data.filter(row =>
+    Object.values(row).some(val => val.toLowerCase().includes(query))
+  );
+  renderTable(filtered);
+});
+</script>
+
 </body>
 </html>
