@@ -84,9 +84,9 @@ function parseCSV(text) {
   renderTable(data);
 }
 
-// 獲取顯示的欄位（排除"電子郵件信箱"）
+// 獲取顯示的欄位（排除"電子郵件信箱"和"小考1"）
 function getDisplayHeaders() {
-  return headers.filter(h => h !== "電子郵件信箱");
+  return headers.filter(h => h !== "電子郵件信箱" && h !== "小考1"&& h !== "小考2" && h !== "簽到");
 }
 
 // 顯示表格
